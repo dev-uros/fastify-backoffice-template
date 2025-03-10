@@ -21,6 +21,38 @@ import {
 } from "../schemas/forgotPasswordSchema";
 
 const authRoutes: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
+    fastify.route({
+        method: 'POST',
+        url: '/refresh-token',
+        handler: async (request, reply) => {
+
+
+            const refreshToken = request.cookies.refresh_token;
+
+            console.log(refreshToken);
+
+            return reply.send({
+                message: 'Successfully authenticated',
+                data: refreshToken
+            });
+
+        },
+        schema: {
+            body: generateTokenRequestSchema,
+            tags: ['auth'],
+            summary: 'Auth - generate JWT token',
+            description: 'Generates token for user',
+            consumes: ['application/json'],
+            response: {
+                200: generateTokenResponseSchema,
+                400: badRequestResponseSchema,
+                404: entityNotFoundResponseSchema,
+                500: serverErrorResponseSchema
+            }
+        }
+    })
+
+
     fastify.route<{ Body: GenerateTokenRequestSchemaType }>({
         method: 'POST',
         url: '/generate-token',
@@ -59,7 +91,7 @@ const authRoutes: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
                 httpOnly: true,
                 secure: fastify.config.APP_ENV === "production", // Ensure HTTPS in production
                 sameSite: "Lax",
-                path: "/refresh",
+                path: "/auth/refresh-token",
             });
 
             return reply.send({
