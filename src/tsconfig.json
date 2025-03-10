@@ -1,0 +1,25 @@
+{
+  "extends": "@tsconfig/node22/tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "outDir": "./dist",
+    "baseUrl": "./app",
+    "declaration": false,
+    "removeComments": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "newLine": "lf",
+    "lib": [
+      "ESNext"
+    ]
+  },
+  "include": ["app/**/*.ts"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
+}
