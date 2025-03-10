@@ -7,7 +7,11 @@ import {FastifyReply, FastifyRequest} from "fastify";
 export default fp(
     async (fastify, opts) => {
         fastify.register(fastifyJwt, {
-            secret: fastify.config.JWT_SECRET
+            secret: fastify.config.JWT_SECRET,
+            cookie: {
+                cookieName: 'refresh_token',
+                signed: false
+            }
         })
 
         fastify.decorate('authenticate',async (request: FastifyRequest, reply: FastifyReply)=>{

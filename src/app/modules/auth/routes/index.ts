@@ -35,14 +35,36 @@ const authRoutes: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
                 throw error
             }
 
-            const token = fastify.jwt.sign({
-                id: user.id,
-                name: user.first_name
-            })
+
+            // Generate access token (short-lived)
+            const accessToken = fastify.jwt.sign(
+                { id: user.id, name: user.first_name },
+                { expiresIn: "15m" } // Access token valid for 15 minutes
+            );
+
+            // Generate refresh token (long-lived)
+            const refreshToken = fastify.jwt.sign(
+                { id: user.id },
+                { expiresIn: "7d" } // Refresh token valid for 7 days
+            );
+
+
+            // const token = fastify.jwt.sign({
+            //     id: user.id,
+            //     name: user.first_name
+            // })
+
+            // Store refresh token in an HTTP-only cookie
+            reply.setCookie("refresh_token", refreshToken, {
+                httpOnly: true,
+                secure: fastify.config.APP_ENV === "production", // Ensure HTTPS in production
+                sameSite: "Lax",
+                path: "/refresh",
+            });
 
             return reply.send({
                 message: 'Successfully authenticated',
-                data: token
+                data: accessToken
             });
 
         },

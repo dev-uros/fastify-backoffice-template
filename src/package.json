@@ -17,6 +17,8 @@
   "description": "",
   "dependencies": {
     "@fastify/autoload": "^6.0.2",
+    "@fastify/cookie": "^11.0.2",
+    "@fastify/cors": "^11.0.0",
     "@fastify/env": "^5.0.1",
     "@fastify/jwt": "^9.0.1",
     "@fastify/redis": "^7.0.2",
