@@ -11,6 +11,9 @@ class UserRepository implements UserRepositoryInterface {
         this.db = db
     }
 
+    useTransaction(transaction: Transaction<DB>){
+        this.db = transaction;
+    }
     async getUserList(): Promise<Selectable<Users>[]> {
         return await this.db
             .selectFrom('users')

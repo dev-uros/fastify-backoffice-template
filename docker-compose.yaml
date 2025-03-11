@@ -1,16 +1,16 @@
 services:
   db:
     container_name: ${DB_CONTAINER_NAME}
-    image: 'postgres:15-alpine'
+    image: "postgres:15-alpine"
     working_dir: /src
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_USER}
       - POSTGRES_DB=${DB_NAME}
     ports:
-      - '7604:5432'
+      - "7604:5432"
     volumes:
-      - ./init-scripts:/docker-entrypoint-initdb.d
+      # - ./init-scripts:/docker-entrypoint-initdb.d
       - appointment-manager-api-db:/var/lib/postgresql/data
   redis:
     container_name: ${REDIS_CONTAINER_NAME}
@@ -31,12 +31,12 @@ services:
       - "3000:3000" # Map container port 3000 to host port 3000
     volumes:
       - ./src:/src # Mount project directory for live updates
-#      - /src/node_modules # Exclude node_modules to avoid conflicts
+    #      - /src/node_modules # Exclude node_modules to avoid conflicts
     command: /bin/sh -c "npm install && npm run dev"
     #    environment:
 #      NODE_ENV: development
 volumes:
-    appointment-manager-api-db:
-      driver: local
-    redis-data:
-      driver: local
+  appointment-manager-api-db:
+    driver: local
+  redis-data:
+    driver: local

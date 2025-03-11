@@ -1,7 +1,8 @@
-import {Insertable, Selectable, Updateable} from "kysely";
-import {Users} from "kysely-codegen";
+import {Insertable, Selectable, Transaction, Updateable} from "kysely";
+import {DB, Users} from "kysely-codegen";
 
 export interface UserRepositoryInterface {
+    useTransaction(transaction: Transaction<DB>): void
     getUserList(): Promise<Selectable<Users>[]>
     find(userId: number): Promise<Selectable<Users> | undefined>
     update(userData: Updateable<Users>, userId: number): Promise<Selectable<Users> | undefined>
