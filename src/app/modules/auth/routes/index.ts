@@ -2,7 +2,7 @@ import {FastifyError, FastifyPluginAsync} from "fastify";
 import {
     generateTokenRequestSchema,
     GenerateTokenRequestSchemaType,
-    generateTokenResponseSchema
+    generateTokenResponseSchema, loginRequestSchema, LoginRequestSchemaType, loginResponseSchema
 } from "../schemas/generateTokenSchema.js";
 import {badRequestResponseSchema} from "../../../schemas/badRequestSchema.js";
 import {serverErrorResponseSchema} from "../../../schemas/serverErrorSchema.js";
@@ -21,93 +21,99 @@ import {
 } from "../schemas/forgotPasswordSchema";
 
 const authRoutes: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
-    fastify.route({
+    // fastify.route({
+    //     method: 'POST',
+    //     url: '/refresh-token',
+    //     preHandler: async (request, reply) => {
+    //         if (!refreshToken) throw new Error("No refresh token");
+    //     },
+    //     handler: async (request, reply) => {
+    //
+    //
+    //         const refreshToken = request.cookies.refresh_token;
+    //
+    //         console.log(refreshToken);
+    //
+    //         const decoded = fastify.jwt.verify(refreshToken);
+    //
+    //         console.log(decoded);
+    //
+    //         const newAccessToken = fastify.jwt.sign(
+    //             {id: decoded.id},
+    //             {expiresIn: "15m"}
+    //         );
+    //
+    //         return reply.send({
+    //             message: 'Successfully authenticated',
+    //             data: newAccessToken
+    //         });
+    //
+    //     },
+    //     schema: {
+    //         body: generateTokenRequestSchema,
+    //         tags: ['auth'],
+    //         summary: 'Auth - generate JWT token',
+    //         description: 'Generates token for user',
+    //         consumes: ['application/json'],
+    //         response: {
+    //             200: generateTokenResponseSchema,
+    //             400: badRequestResponseSchema,
+    //             404: entityNotFoundResponseSchema,
+    //             500: serverErrorResponseSchema
+    //         }
+    //     }
+    // })
+
+
+    fastify.route<{ Body: LoginRequestSchemaType }>({
         method: 'POST',
-        url: '/refresh-token',
-        handler: async (request, reply) => {
+        url: '/login',
+        preHandler: async (request, reply) => {
+            const UserRepository = fastify.getUserRepository();
 
+            const user = await UserRepository.findActiveByEmail(request.body.email);
 
-            const refreshToken = request.cookies.refresh_token;
+            if(!user){
+                throw new fastify.NotFoundError('User not found')
+            }
 
-            console.log(refreshToken);
+            const passwordVerified = await fastify.verifyPassword(request.body.password, user.password)
 
-            return reply.send({
-                message: 'Successfully authenticated',
-                data: refreshToken
-            });
+            if(!passwordVerified){
+                throw new fastify.ValidationError('Password miss match')
+            }
 
         },
-        schema: {
-            body: generateTokenRequestSchema,
-            tags: ['auth'],
-            summary: 'Auth - generate JWT token',
-            description: 'Generates token for user',
-            consumes: ['application/json'],
-            response: {
-                200: generateTokenResponseSchema,
-                400: badRequestResponseSchema,
-                404: entityNotFoundResponseSchema,
-                500: serverErrorResponseSchema
-            }
-        }
-    })
-
-
-    fastify.route<{ Body: GenerateTokenRequestSchemaType }>({
-        method: 'POST',
-        url: '/generate-token',
         handler: async (request, reply) => {
 
-            const user = await fastify.authRepository.find(request.body.name)
+            const {refreshToken, accessToken} = await fastify.AuthLoginService.login(
+                request.body,
+                request.ip,
+                request.headers['user-agent']
+            )
 
-            if (!user) {
-                const error = new Error() as FastifyError
-                error.statusCode = 404
-                error.message = 'User not found'
-                throw error
-            }
-
-
-            // Generate access token (short-lived)
-            const accessToken = fastify.jwt.sign(
-                { id: user.id, name: user.first_name },
-                { expiresIn: "15m" } // Access token valid for 15 minutes
-            );
-
-            // Generate refresh token (long-lived)
-            const refreshToken = fastify.jwt.sign(
-                { id: user.id },
-                { expiresIn: "7d" } // Refresh token valid for 7 days
-            );
-
-
-            // const token = fastify.jwt.sign({
-            //     id: user.id,
-            //     name: user.first_name
-            // })
-
-            // Store refresh token in an HTTP-only cookie
             reply.setCookie("refresh_token", refreshToken, {
                 httpOnly: true,
-                secure: fastify.config.APP_ENV === "production", // Ensure HTTPS in production
+                secure: fastify.config.APP_ENV === "production",
                 sameSite: "Lax",
                 path: "/auth/refresh-token",
             });
 
+
             return reply.send({
                 message: 'Successfully authenticated',
-                data: accessToken
+                accessToken: accessToken
             });
 
         },
         schema: {
-            body: generateTokenRequestSchema,
+            body: loginRequestSchema,
             tags: ['auth'],
             summary: 'Auth - generate JWT token',
             description: 'Generates token for user',
             consumes: ['application/json'],
             response: {
-                200: generateTokenResponseSchema,
+                200: loginResponseSchema,
                 400: badRequestResponseSchema,
                 404: entityNotFoundResponseSchema,
                 500: serverErrorResponseSchema
@@ -127,7 +133,7 @@ const authRoutes: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
             const PasswordResetRepository = fastify.getPasswordResetRepository();
 
-            if(request.body.password !== request.body.password_confirmation){
+            if (request.body.password !== request.body.password_confirmation) {
                 throw new fastify.ValidationError('Password and password confirmation miss match')
             }
 
@@ -224,7 +230,7 @@ const authRoutes: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
 
             const PasswordResetRepository = fastify.getPasswordResetRepository();
 
-            if(request.body.password !== request.body.password_confirmation){
+            if (request.body.password !== request.body.password_confirmation) {
                 throw new fastify.ValidationError('Password and password confirmation miss match')
             }
 

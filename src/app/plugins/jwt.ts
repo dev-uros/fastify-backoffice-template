@@ -29,8 +29,8 @@ export default fp(
 
 declare module "@fastify/jwt" {
     interface FastifyJWT {
-        payload: { id: number, name: string } // payload type is used for signing and verifying
-        user: Selectable<Users>
+        payload: { session_id: string, user_id: number } // payload type is used for signing and verifying
+        user: { session_id: string, user_id: number, iat: string, exp: string }
     }
 }
 declare module 'fastify' {

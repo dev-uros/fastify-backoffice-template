@@ -1,41 +1,54 @@
 import {Static, Type} from "@sinclair/typebox";
 
-export const generateTokenRequestSchema = Type.Object(
+export const loginRequestSchema = Type.Object(
     {
 
-        name: Type.String({
+        email: Type.String({
             minLength: 1,
-            maxLength: 50,
+            maxLength: 255,
+            format: 'email',
             errorMessage: {
-                minLength: 'User name should have at least one character!',
-                maxLength: 'User name can have up to 255 characters!'
+                minLength: 'User email should have at least one character!',
+                maxLength: 'User email can have up to 255 characters!',
+                format: 'Invalid user email format'
             },
             transform: ['trim']
         }),
+        password: Type.String({
+            minLength: 1,
+            maxLength: 255,
+            errorMessage: {
+                minLength: 'User password should have at least one character!',
+                maxLength: 'User password can have up to 255 characters!',
+            },
+            transform: ['trim']
+        })
+
 
     },
     {
         errorMessage: {
             type: 'Invalid JSON',
             required: {
-                name: 'User name is required',
+                email: 'User email is required',
+                password: 'User password is required'
             },
         },
         additionalProperties: false
     }
 )
 
-export type GenerateTokenRequestSchemaType = Static<typeof generateTokenRequestSchema>
+export type LoginRequestSchemaType = Static<typeof loginRequestSchema>
 
 
-export const generateTokenResponseSchema = Type.Object(
+export const loginResponseSchema = Type.Object(
     {
         message: Type.String(),
-        data: Type.String()
+        accessToken: Type.String()
     },
     {
         description: 'Success response',
         additionalProperties: false
     }
 )
-export type GenerateTokenResponseSchemaType = Static<typeof generateTokenResponseSchema>
+export type LoginResponseSchemaType = Static<typeof loginResponseSchema>
