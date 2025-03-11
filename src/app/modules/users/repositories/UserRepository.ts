@@ -49,12 +49,12 @@ class UserRepository implements UserRepositoryInterface {
             .executeTakeFirst()
     }
 
-    async findByEmail(email: string): Promise<Selectable<Users> | undefined> {
+    async findByEmail(email: string): Promise<Selectable<Users>> {
         return await this.db
             .selectFrom('users')
             .where('email', '=', email)
             .selectAll()
-            .executeTakeFirst()
+            .executeTakeFirstOrThrow()
     }
 
     async findActiveByEmail(email: string): Promise<Selectable<Users> | undefined> {

@@ -23,11 +23,24 @@ class ValidationError extends Error {
     }
 }
 
+class AuthenticationError extends Error {
+    statusCode: number;
+
+    constructor(message: string = 'Unauthenticated') {
+        super(message);
+        this.name = 'Unauthenticated';
+        this.statusCode = 401;
+        Error.captureStackTrace(this, NotFoundError);
+    }
+}
+
 export default fp(async (fastify, opts) => {
 
     fastify.decorate('NotFoundError', NotFoundError)
 
     fastify.decorate('ValidationError', ValidationError)
+
+    fastify.decorate('AuthenticationError', AuthenticationError)
 
 })
 
@@ -36,6 +49,7 @@ declare module 'fastify' {
     interface FastifyInstance {
         NotFoundError: typeof NotFoundError,
         ValidationError: typeof ValidationError
+        AuthenticationError: typeof  AuthenticationError
     }
 
 }

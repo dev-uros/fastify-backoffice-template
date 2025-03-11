@@ -28,14 +28,26 @@ export default fp(
             }
         }
 
+        const refreshAccessToken = async(refreshToken: string) => {
+            const decoded = await fastify.jwt.verify(refreshToken) as { session_id: string, user_id: number, iat: string, exp: string };
+
+            return fastify.jwt.sign(
+                {session_id: decoded.session_id, user_id: decoded.user_id},
+                {expiresIn: "15m"}
+            );
+        }
+
         fastify.decorate('generateRefreshAndAccessTokens', generateRefreshAndAccessTokens)
+        fastify.decorate('refreshAccessToken', refreshAccessToken)
 
     }
 )
 
 declare module 'fastify' {
     interface FastifyInstance {
-        generateRefreshAndAccessTokens(userId: number): {accessToken: string, refreshToken: string, sessionId, validFrom: string, validTo: string},
+        generateRefreshAndAccessTokens(userId: number): {accessToken: string, refreshToken: string, sessionId: string, validFrom: string, validTo: string},
+        refreshAccessToken(refreshToken: string): Promise<string>,
+
     }
 
 }

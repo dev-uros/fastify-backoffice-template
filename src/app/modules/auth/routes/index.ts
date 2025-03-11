@@ -1,8 +1,5 @@
-import {FastifyError, FastifyPluginAsync} from "fastify";
-import {
-    generateTokenRequestSchema,
-    GenerateTokenRequestSchemaType,
-    generateTokenResponseSchema, loginRequestSchema, LoginRequestSchemaType, loginResponseSchema
+import {FastifyPluginAsync} from "fastify";
+import { loginRequestSchema, LoginRequestSchemaType, loginResponseSchema
 } from "../schemas/generateTokenSchema.js";
 import {badRequestResponseSchema} from "../../../schemas/badRequestSchema.js";
 import {serverErrorResponseSchema} from "../../../schemas/serverErrorSchema.js";
@@ -19,50 +16,52 @@ import {
     forgotPasswordResponseSchema,
     ForgotPasswordResponseSchemaType
 } from "../schemas/forgotPasswordSchema";
+import {refreshAccessTokenResponseSchema} from "../schemas/refreshAccessTokenSchema";
 
 const authRoutes: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
-    // fastify.route({
-    //     method: 'POST',
-    //     url: '/refresh-token',
-    //     preHandler: async (request, reply) => {
-    //         if (!refreshToken) throw new Error("No refresh token");
-    //     },
-    //     handler: async (request, reply) => {
-    //
-    //
-    //         const refreshToken = request.cookies.refresh_token;
-    //
-    //         console.log(refreshToken);
-    //
-    //         const decoded = fastify.jwt.verify(refreshToken);
-    //
-    //         console.log(decoded);
-    //
-    //         const newAccessToken = fastify.jwt.sign(
-    //             {id: decoded.id},
-    //             {expiresIn: "15m"}
-    //         );
-    //
-    //         return reply.send({
-    //             message: 'Successfully authenticated',
-    //             data: newAccessToken
-    //         });
-    //
-    //     },
-    //     schema: {
-    //         body: generateTokenRequestSchema,
-    //         tags: ['auth'],
-    //         summary: 'Auth - generate JWT token',
-    //         description: 'Generates token for user',
-    //         consumes: ['application/json'],
-    //         response: {
-    //             200: generateTokenResponseSchema,
-    //             400: badRequestResponseSchema,
-    //             404: entityNotFoundResponseSchema,
-    //             500: serverErrorResponseSchema
-    //         }
-    //     }
-    // })
+
+
+    fastify.route({
+        method: 'POST',
+        url: '/refresh-token',
+        preHandler: async (request, reply) => {
+            const refreshToken = request.cookies.refresh_token;
+            if (!refreshToken) {
+                throw new fastify.AuthenticationError()
+            }
+
+            try {
+                await fastify.jwt.verify(refreshToken);
+            }catch (err){
+                return reply.send(err)
+            }
+        },
+        handler: async (request, reply) => {
+
+            const refreshToken = request.cookies.refresh_token!;
+
+            const accessToken = await fastify.AuthRefreshAccessTokenService.refreshAccessToken(refreshToken)
+
+            return reply.send({
+                message: 'Successfully refreshed access token',
+                accessToken: accessToken
+            });
+
+        },
+        schema: {
+            tags: ['auth'],
+            summary: 'Auth - generate JWT token',
+            description: 'Generates token for user',
+            consumes: ['application/json'],
+            response: {
+                200: refreshAccessTokenResponseSchema,
+                400: badRequestResponseSchema,
+                401: unauthenticatedResponseSchema,
+                404: entityNotFoundResponseSchema,
+                500: serverErrorResponseSchema
+            }
+        }
+    })
 
 
     fastify.route<{ Body: LoginRequestSchemaType }>({
@@ -89,13 +88,13 @@ const authRoutes: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
             const {refreshToken, accessToken} = await fastify.AuthLoginService.login(
                 request.body,
                 request.ip,
-                request.headers['user-agent']
+                request.headers['user-agent'] ?? 'No agent'
             )
 
             reply.setCookie("refresh_token", refreshToken, {
                 httpOnly: true,
                 secure: fastify.config.APP_ENV === "production",
-                sameSite: "Lax",
+                sameSite: "lax",
                 path: "/auth/refresh-token",
             });
 

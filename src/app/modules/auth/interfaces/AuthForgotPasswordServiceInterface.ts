@@ -1,3 +1,3 @@
 export interface AuthForgotPasswordServiceInterface {
-    generateForgotPasswordRequest(email: string, password: string, passwordResetId: number): Promise<void>
+    generateForgotPasswordRequest(email: string): Promise<void>
 }

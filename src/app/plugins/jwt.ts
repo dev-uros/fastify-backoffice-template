@@ -1,7 +1,5 @@
 import fp from "fastify-plugin";
 import fastifyJwt from "@fastify/jwt";
-import {Selectable} from "kysely";
-import {Users} from "kysely-codegen";
 import {FastifyReply, FastifyRequest} from "fastify";
 
 export default fp(
