@@ -24,9 +24,7 @@ const userRoutes: FastifyPluginAsync = async (fastify, opts): Promise<void> => {
     method: 'GET',
     handler: async function (request, reply) {
 
-      const userListService = fastify.getUserListService(fastify.getUserRepository())
-
-      const users = await userListService.getUserList()
+      const users = await fastify.UserListService.getUserList()
 
       return reply.send({
         message: 'Successfully retrieved users',
