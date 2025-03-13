@@ -7,7 +7,6 @@ export default fp(
         //@ts-ignore
         await fastify.register(fastifyRedis, {
             host: 'redis',
-            password: 'redis',
             port: 6379,
             db: 0,
             namespace: 'redisQueue',
@@ -29,7 +28,6 @@ export default fp(
         //@ts-ignore
         await fastify.register(fastifyRedis, {
             host: 'redis',
-            password: 'redis',
             port: 6379,
             db: 1,
             namespace: 'redisCron',

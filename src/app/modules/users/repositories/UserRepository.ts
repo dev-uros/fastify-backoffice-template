@@ -60,22 +60,22 @@ class UserRepository implements UserRepositoryInterface {
             .executeTakeFirstOrThrow()
     }
 
-    async findActiveByEmail(email: string): Promise<Selectable<Users> | undefined> {
+    async findActiveByEmail(email: string): Promise<Selectable<Users>> {
         return await this.db
             .selectFrom('users')
             .where('email', '=', email)
             .where('is_active', '=', true)
             .selectAll()
-            .executeTakeFirst()
+            .executeTakeFirstOrThrow()
     }
 
-    async findInactiveByEmail(email: string): Promise<Selectable<Users> | undefined> {
+    async findInactiveByEmail(email: string): Promise<Selectable<Users>> {
         return await this.db
             .selectFrom('users')
             .where('email', '=', email)
             .where('is_active', '=', false)
             .selectAll()
-            .executeTakeFirst()
+            .executeTakeFirstOrThrow()
     }
 
     async store(userData: Insertable<Users>): Promise<Selectable<Users>> {

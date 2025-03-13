@@ -1,4 +1,4 @@
-import {Kysely, sql} from 'kysely'
+import {Kysely} from 'kysely'
 
 export async function up(db: Kysely<any>): Promise<void> {
     // Migration code
@@ -16,9 +16,7 @@ export async function up(db: Kysely<any>): Promise<void> {
 
     const addForeignKeyConstraint = db.schema
         .alterTable('user_sessions')
-        .addForeignKeyConstraint('user_sessions_user_id_fkey', ['user_id'], 'users', ['id'], (cb) =>
-            cb.onDelete('cascade').onUpdate('cascade')
-        )
+        .addForeignKeyConstraint('user_sessions_user_id_fkey', ['user_id'], 'users', ['id'])
         .compile();
 
     const addIndex = db.schema

@@ -28,6 +28,7 @@ export default fp(
             if(job){
                 fastify.log.warn(`${job.name} failed`)
                 fastify.log.warn(`${job.data.user.email} - email sent`)
+                fastify.log.warn('error:' + error.message);
             }
 
         });

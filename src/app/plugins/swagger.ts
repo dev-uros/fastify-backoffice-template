@@ -24,7 +24,6 @@ export default fp(async (fastify, opts) => {
             security: [{BearerAuth: []}],
 
             tags: [
-                {name: 'pets', description: 'Pet Module Endpoints'},
                 {name: 'users', description: 'Users Module Endpoints'},
                 {name: 'auth', description: 'Authentication module'}
             ]

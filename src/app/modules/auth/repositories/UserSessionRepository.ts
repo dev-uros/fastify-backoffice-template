@@ -1,6 +1,6 @@
 import fp from 'fastify-plugin'
-import {Insertable, Kysely, Selectable, sql, Transaction} from 'kysely'
-import {DB, PasswordResets, UserSessions} from 'kysely-codegen'
+import {Insertable, Kysely, Selectable, Transaction} from 'kysely'
+import {DB, UserSessions} from 'kysely-codegen'
 import {UserSessionRepositoryInterface} from "../interfaces/UserSessionRepositoryInterface";
 
 class UserSessionRepository implements UserSessionRepositoryInterface {
